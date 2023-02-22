@@ -66,8 +66,8 @@ class AOunit(QObject):
         #Initialize number of AO steps / command: 
         self.AO_steps_per_cmd = 1
         
-        #
-        self.mount_time_limit = 5  
+        #Limit time between calls to the mount. 
+        #self.mount_time_limit = 5  
 
         #Initialization of movement parameters/variables 
         self.raster_steps = 50 #range of raster scan steps
@@ -80,6 +80,9 @@ class AOunit(QObject):
         self.north_south_clicks = 0 #tracker for # of steps in N-S direction
         self.east_west_clicks = 0 #tracker for # of steps in E-W direction
         #self.move_center() #initialize center position. 
+        
+        #Center the device upon startup
+        self.move_center()
         
         #Initialization of control algorithm parameters
         self.circle_of_alignment_radii = 3 #radial number of pixels in which corrections are not needed.
@@ -417,7 +420,6 @@ class AOunit(QObject):
     
 
     #-----------AUXILLARY FUNCTIONS------------------
-    
     
     def check_limit(self):
         """
