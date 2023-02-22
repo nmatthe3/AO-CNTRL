@@ -127,18 +127,18 @@ class AOunit(QObject):
         #Create instance of camera (assumes only one camera is connected)
         self.camera = asi.Camera(0) #Create instance of camera
         
-        #Set image type
-        self.camera.set_image_type(asi.ASI_IMG_RAW8)
+        #Initialize binning
+        self.binning = 2
         
+        #Set initial binning to 1
+        self.camera.set_roi(bins=self.binning)
+
         #Set default camera settings
         self.camera.max_height = self.camera.get_camera_property()['MaxHeight']
         self.camera.max_width = self.camera.get_camera_property()['MaxWidth']
         self.camera.set_control_value(asi.ASI_GAIN,1)
         self.camera.set_control_value(asi.ASI_EXPOSURE,1000)
-        self.camera.set_roi(start_x=0,start_y=0,
-                            height=self.camera.max_height,
-                            width=self.camera.max_width
-                            )
+        self.camera.set_roi(bins=self.binning)
         
         self.noise_level = 1
         
@@ -150,6 +150,8 @@ class AOunit(QObject):
         
         #Start 'video' mode for fast captures
         self.camera.start_video_capture()
+        
+        
         
         #Capture initial frame
         self.flip_image_x = False
@@ -603,7 +605,7 @@ class AO_interface(QWidget):
         super(AO_interface,self).__init__()
 
         #Load User Interface
-        uic.loadUi('aoUI_v0.10.ui',self)
+        uic.loadUi('aoUI_v0.11.ui',self)
         
         self.setWindowTitle("Adaptive Optics Control v0.10")
         self.AO = AOunit() #reference the AO unit class as AO 
@@ -958,7 +960,8 @@ class AO_interface(QWidget):
         self.AO.camera.set_roi(start_x=x0,
                                start_y=y0,
                                height = self.ROI_size,
-                               width = self.ROI_size)
+                               width = self.ROI_size,
+                               bins=self.AO.binning)
         self.AO.camera.start_video_capture()
         return
 
@@ -979,7 +982,8 @@ class AO_interface(QWidget):
         self.AO.camera.set_roi(start_x=x0,
                                start_y=y0,
                                height = self.ROI_size,
-                               width = self.ROI_size)
+                               width = self.ROI_size,
+                               bins=self.AO.binning)
         self.AO.camera.start_video_capture()
         
     def set_field_rotation_direction(self):
@@ -1024,10 +1028,11 @@ class AO_interface(QWidget):
         self.extAboutCent_B.setEnabled(True)
 
         self.AO.camera.stop_video_capture()
-        self.AO.camera.set_roi(start_x=0,
-                               start_y=0,
-                               height = self.AO.camera.max_height,
-                               width = self.AO.camera.max_width)
+        #self.AO.camera.set_roi(start_x=0,
+        #                       start_y=0,
+        #                       height = self.AO.camera.max_height,
+        #                       width = self.AO.camera.max_width)
+        self.AO.camera.set_roi(bins=self.AO.binning)
         self.AO.camera.start_video_capture()
         
     def update_opt_label(self):
