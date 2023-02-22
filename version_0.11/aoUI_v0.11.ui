@@ -459,7 +459,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Binning:</string>
+     <string>Binning (1 or 2):</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

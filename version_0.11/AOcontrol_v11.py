@@ -128,7 +128,7 @@ class AOunit(QObject):
         self.camera = asi.Camera(0) #Create instance of camera
         
         #Initialize binning
-        self.binning = 2
+        self.binning = 1
         
         #Set initial binning to 1
         self.camera.set_roi(bins=self.binning)
@@ -1054,7 +1054,9 @@ class AO_interface(QWidget):
                                          int(self.exposureL.text()))
         self.AO.noise_level = int(self.noiseThreshold_L.text())
         self.AO.signalThreshold = int(self.signalThreshold_L.text())
-    
+        self.AO.binning = int(self.binning_L.text())
+        self.AO.camera.set_roi(bins=self.AO.binning)
+        
     def update_about_centroid_action(self):
         [yc,xc] = center_of_mass(self.AO.image_data)
         self.AO._x_CA = xc
