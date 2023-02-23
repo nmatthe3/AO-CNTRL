@@ -8,7 +8,6 @@ Version created 2023-02-21
 import sys,serial,time,os
 from PyQt5.QtWidgets import QApplication,QWidget,QSlider
 from PyQt5.QtCore import QObject,QThread,pyqtSignal
-from PyQt5.QtGui import QTextCursor
 from PyQt5 import QtCore,uic
 import datetime
 import numpy as np
@@ -44,7 +43,7 @@ class AOunit(QObject):
     def __init__(self):
         super(AOunit,self).__init__()
 
-        self.port_address = 'COM7'
+        self.port_address = 'COM6'
         
         try:
             self.ser = serial.Serial(self.port_address)
@@ -90,6 +89,7 @@ class AOunit(QObject):
         self._y_CA = 0 #optimal y-position
         self.controlAlgorithmIsRunning = False
         self.signalThreshold = 5 
+        self.mount_cmd_duration = 1
         
         self.Kp = 1
         self.Ki = 0
@@ -102,6 +102,16 @@ class AOunit(QObject):
         self.quad2 = [45,135]
         self.quad3 = [135,225]
         self.quad4 = [225,315]
+        
+        def rot_matrix(self):
+            #convert to radians
+            angle = self.field_rotation_ang * np.pi/180.0
+            #compute rotation matrix
+            n_p = np.array([np.cos(angle),-np.sin(angle)])
+            e_p = np.array([np.sin(angle),np.cos(angle)])
+            return n_p,e_p
+        
+        
         
         #======================ZWO ASI CAMERA CONTROL=========================
         #
@@ -325,6 +335,7 @@ class AOunit(QObject):
                 if limit_y_S:
                     self.move_north()
                 
+                #Target is to 'right' (west) of set-point
                 if N_x > 0:
                     if in_limit_x:
                         self.move_west()
@@ -333,6 +344,7 @@ class AOunit(QObject):
                         self.move_mount_west_mod()
                         self.wait()
                         self.move_east()
+                #Target is to 'left' (east) of set-point
                 if N_x < 0:
                     if in_limit_x:
                         self.move_east()
@@ -341,6 +353,7 @@ class AOunit(QObject):
                         self.move_mount_east_mod()
                         self.wait()
                         self.move_west()
+                #Target is above ('North') of set-point
                 if N_y > 0:
                     if in_limit_y:
                         self.move_south()
@@ -349,6 +362,7 @@ class AOunit(QObject):
                         self.move_mount_south_mod()
                         self.wait()
                         self.move_north()
+                #Target is 'below' (South) of set-point
                 if N_y < 0: 
                     if in_limit_y:
                         self.move_north()
