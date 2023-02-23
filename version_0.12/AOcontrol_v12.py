@@ -448,7 +448,9 @@ class AOunit(QObject):
         #compute rotation matrix
         n_p = np.cos(angle)*dir_vec[0] - np.sin(angle)*dir_vec[1]
         e_p = np.sin(angle)*dir_vec[0] + np.cos(angle)*dir_vec[1]
-        return int(np.round(n_p)),int(np.round(e_p))
+        out_n_p,out_e_p = int(np.round(n_p)),int(np.round(e_p))
+        print(out_n_p,out_e_p)
+        return out_n_p,out_e_p
 
     #--------------MOVEMENT FUNCTIONS-----------------
     def move_north(self):
@@ -931,6 +933,7 @@ class AO_interface(QWidget):
 
     
     def updateMountCMD(self):
+        self.AO.mount_cmd_duration = int(self.CMD_duration_L.text())
         CMD_value = str(self.CMD_duration_L.text())
         print("Updating mount duration to %s ms" % CMD_value)
         num = CMD_value.zfill(5)
