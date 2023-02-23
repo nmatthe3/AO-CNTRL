@@ -332,10 +332,7 @@ class AOunit(QObject):
                         self.move_west()
                     if limit_x_W:
                         print("Beyond -X limit..")
-                        if self.use_field_rotation == True:
-                            self.move_mount_west_mod()
-                        if self.use_field_rotation == False:
-                            self.move_mount_west()
+                        self.move_mount_west_mod()
                         self.wait()
                         self.move_east()
                 #Target is to 'left' (west) of set-point
@@ -344,10 +341,7 @@ class AOunit(QObject):
                         self.move_east()
                     if limit_x_E:
                         print("Beyond +X limit..")
-                        if self.use_field_rotation == True:
-                            self.move_mount_east_mod()
-                        if self.use_field_rotation == False:
-                            self.move_mount_east()
+                        self.move_mount_east_mod()
                         self.wait()
                         self.move_west()
                 #Target is above ('North') of set-point
@@ -356,11 +350,7 @@ class AOunit(QObject):
                         self.move_south()
                     if limit_y_S:
                         print("Beyond +Y Limit")
-                        if self.use_field_rotation == True:
-                            self.move_mount_south_mod()
-                        if self.use_field_rotation == False:
-                            self.move_mount_south()
-
+                        self.move_mount_south_mod()
                         self.wait()
                         self.move_north()
                 #Target is 'below' (South) of set-point
@@ -369,11 +359,7 @@ class AOunit(QObject):
                         self.move_north()
                     if limit_y_N:
                         print("Beyond -Y Limit")
-                        if self.use_field_rotation == True:
-                            self.move_mount_north_mod()
-                        if self.use_field_rotation == False:
-                            self.move_mount_north()
-                        #self.move_mount_north()
+                        self.move_mount_north_mod()
                         self.wait()
                         self.move_south()
                 
@@ -530,98 +516,72 @@ class AOunit(QObject):
             return 4
     
     def move_mount_north_mod(self):
+        
+        if self.use_field_rotation == False:
+            self.move_mount_north()
+            return
+        
         inp_vec = np.array([self.mount_cmd_duration,0])
         [n,e] = self.rot_matrix(inp_vec)
         if n > 0:
             self.move_mount_north_by_val(n)
         if n < 0:
-            self.move_mount_south_by_val(np.abs(n))
+            self.move_mount_south_by_val(int(np.abs(n)))
         if e > 0:
             self.move_mount_east_by_val(e)
         if e < 0:
-            self.move_mount_west_by_val(np.abs(e))
+            self.move_mount_west_by_val(int(np.abs(e)))
     
     def move_mount_south_mod(self):
+        
+        if self.use_field_rotation == False:
+            self.move_mount_south()
+            return
+        
         inp_vec = np.array([-self.mount_cmd_duration,0])
         [n,e] = self.rot_matrix(inp_vec)
         if n > 0:
             self.move_mount_north_by_val(n)
         if n < 0:
-            self.move_mount_south_by_val(np.abs(n))
+            self.move_mount_south_by_val(int(np.abs(n)))
         if e > 0:
             self.move_mount_east_by_val(e)
         if e < 0:
-            self.move_mount_west_by_val(np.abs(e))
+            self.move_mount_west_by_val(int(np.abs(e)))
             
     def move_mount_east_mod(self):
+        
+        if self.use_field_rotation == False:
+            self.move_mount_east()
+            return
+        
         inp_vec = np.array([0,self.mount_cmd_duration])
         [n,e] = self.rot_matrix(inp_vec)
         if n > 0:
             self.move_mount_north_by_val(n)
         if n < 0:
-            self.move_mount_south_by_val(np.abs(n))
+            self.move_mount_south_by_val(int(np.abs(n)))
         if e > 0:
             self.move_mount_east_by_val(e)
         if e < 0:
-            self.move_mount_west_by_val(np.abs(e))
+            self.move_mount_west_by_val(int(np.abs(e)))
             
     def move_mount_west_mod(self):
+        
+        if self.use_field_rotation == False:
+            self.move_mount_west()
+            return
+        
         inp_vec = np.array([0,-self.mount_cmd_duration])
         [n,e] = self.rot_matrix(inp_vec)
         if n > 0:
             self.move_mount_north_by_val(n)
         if n < 0:
-            self.move_mount_south_by_val(np.abs(n))
+            self.move_mount_south_by_val(int(np.abs(n)))
         if e > 0:
             self.move_mount_east_by_val(e)
         if e < 0:
-            self.move_mount_west_by_val(np.abs(e))
-    
-    '''
-    def move_mount_north_mod(self):
-        quad = self.get_field_angle_quadrant()
-        if quad == 1:
-            self.move_mount_north()
-        if quad == 2:
-            self.move_mount_east()
-        if quad == 3:
-            self.move_mount_south()
-        if quad == 4:
-            self.move_mount_west()
-
-    def move_mount_south_mod(self):
-        quad = self.get_field_angle_quadrant()
-        if quad == 1:
-            self.move_mount_south()
-        if quad == 2:
-            self.move_mount_west()
-        if quad == 3:
-            self.move_mount_north()
-        if quad == 4:
-            self.move_mount_east()
-
-    def move_mount_east_mod(self):
-        quad = self.get_field_angle_quadrant()
-        if quad == 1:
-            self.move_mount_east()
-        if quad == 2:
-            self.move_mount_south()
-        if quad == 3:
-            self.move_mount_west()
-        if quad == 4:
-            self.move_mount_north()
-
-    def move_mount_west_mod(self):
-        quad = self.get_field_angle_quadrant()
-        if quad == 1:
-            self.move_mount_west()
-        if quad == 2:
-            self.move_mount_north()
-        if quad == 3:
-            self.move_mount_east()
-        if quad == 4:
-            self.move_mount_south()
-    '''
+            self.move_mount_west_by_val(int(np.abs(e)))
     
     def move_mount_north(self):
         self.ser.write(self.cmd_mount_north)
@@ -633,9 +593,9 @@ class AOunit(QObject):
             of duration 'cmd_length' '''
         
         #Make sure input is an integer
-        if type(cmd_length) != 'int':
+        if isinstance(cmd_length,int) == False:
             print("Duration value of type %s is not valid." 
-                  % cmd_length)
+                  % type(cmd_length))
             
         north_cmd = bytes("MN"+str(cmd_length),"utf-8")
         self.ser.write(north_cmd)
@@ -653,9 +613,9 @@ class AOunit(QObject):
             of duration 'cmd_length' '''
         
         #Make sure input is an integer
-        if type(cmd_length) != 'int':
+        if isinstance(cmd_length,int) == False:
             print("Duration value of type %s is not valid." 
-                  % cmd_length)
+                  % type(cmd_length))
             return
         
         south_cmd = bytes("MS"+str(cmd_length),"utf-8")
@@ -674,9 +634,9 @@ class AOunit(QObject):
             of duration 'cmd_length' '''
         
         #Make sure input is an integer
-        if type(cmd_length) != 'int':
+        if isinstance(cmd_length,int) == False:
             print("Duration value of type %s is not valid." 
-                  % cmd_length)
+                  % type(cmd_length))
             return
             
         east_cmd = bytes("MT"+str(cmd_length),"utf-8")
@@ -695,9 +655,9 @@ class AOunit(QObject):
             of duration 'cmd_length' '''
         
         #Make sure input is an integer
-        if type(cmd_length) != 'int':
+        if isinstance(cmd_length,int) == False:
             print("Duration value of type %s is not valid." 
-                  % cmd_length)
+                  % type(cmd_length))
             return
             
         west_cmd = bytes("MW"+str(cmd_length),"utf-8")
