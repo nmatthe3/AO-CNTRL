@@ -748,7 +748,8 @@ class AO_interface(QWidget):
 
     def draw_circle(self,x0,y0):
         thet_vals = np.arange(0,2*np.pi,0.001)
-        r_val = 13.0
+        #r_val = int(np.round(13.0 / float(self.AO.binning)))
+        r_val = 13.0 / self.AO.binning
         return [x0+r_val * np.sin(thet_vals),y0+r_val * np.cos(thet_vals)]
         
     def output_terminal_written(self,text):
@@ -757,7 +758,8 @@ class AO_interface(QWidget):
         #self.output_terminal_textEdit.setTextCursor(0)
         self.output_terminal_textEdit.insertPlainText(text)
         self.output_terminal_textEdit.verticalScrollBar().setValue(self.output_terminal_textEdit.verticalScrollBar().maximum())
-     
+        return 
+    
     def init_UI(self):
         '''
         Creates the GUI and connection between PyQT5 widgets and AO actions
