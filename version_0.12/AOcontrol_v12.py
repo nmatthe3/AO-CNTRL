@@ -43,7 +43,7 @@ class AOunit(QObject):
     def __init__(self):
         super(AOunit,self).__init__()
 
-        self.port_address = 'COM6'
+        self.port_address = 'COM7'
         
         try:
             self.ser = serial.Serial(self.port_address)
@@ -102,15 +102,6 @@ class AOunit(QObject):
         self.quad2 = [45,135]
         self.quad3 = [135,225]
         self.quad4 = [225,315]
-        
-        def rot_matrix(self,dir_vec):
-            #convert to radians
-            angle = self.field_rotation_ang * np.pi/180.0
-            #compute rotation matrix
-            n_p = np.array([np.cos(angle),-np.sin(angle)])
-            e_p = np.array([np.sin(angle),np.cos(angle)])
-            return n_p.astype('int'),int(e_p)
-        
         
         
         #======================ZWO ASI CAMERA CONTROL=========================
@@ -341,7 +332,10 @@ class AOunit(QObject):
                         self.move_west()
                     if limit_x_W:
                         print("Beyond -X limit..")
-                        self.move_mount_west_mod()
+                        if self.use_field_rotation == True:
+                            self.move_mount_west_mod()
+                        if self.use_field_rotation == False:
+                            self.move_mount_west()
                         self.wait()
                         self.move_east()
                 #Target is to 'left' (west) of set-point
@@ -350,7 +344,10 @@ class AOunit(QObject):
                         self.move_east()
                     if limit_x_E:
                         print("Beyond +X limit..")
-                        self.move_mount_east_mod()
+                        if self.use_field_rotation == True:
+                            self.move_mount_east_mod()
+                        if self.use_field_rotation == False:
+                            self.move_mount_east()
                         self.wait()
                         self.move_west()
                 #Target is above ('North') of set-point
@@ -359,7 +356,11 @@ class AOunit(QObject):
                         self.move_south()
                     if limit_y_S:
                         print("Beyond +Y Limit")
-                        self.move_mount_south_mod()
+                        if self.use_field_rotation == True:
+                            self.move_mount_south_mod()
+                        if self.use_field_rotation == False:
+                            self.move_mount_south()
+
                         self.wait()
                         self.move_north()
                 #Target is 'below' (South) of set-point
@@ -368,7 +369,10 @@ class AOunit(QObject):
                         self.move_north()
                     if limit_y_N:
                         print("Beyond -Y Limit")
-                        self.move_mount_north_mod()
+                        if self.use_field_rotation == True:
+                            self.move_mount_north_mod()
+                        if self.use_field_rotation == False:
+                            self.move_mount_north()
                         #self.move_mount_north()
                         self.wait()
                         self.move_south()
@@ -451,6 +455,14 @@ class AOunit(QObject):
         if self.shouldWait:
             time.sleep(self.wait_time)
         return
+
+    def rot_matrix(self,dir_vec):
+        #convert to radians
+        angle = self.field_rotation_ang * np.pi/180.0
+        #compute rotation matrix
+        n_p = np.cos(angle)*dir_vec[0] - np.sin(angle)*dir_vec[1]
+        e_p = np.sin(angle)*dir_vec[0] + np.cos(angle)*dir_vec[1]
+        return int(np.round(n_p)),int(np.round(e_p))
 
     #--------------MOVEMENT FUNCTIONS-----------------
     def move_north(self):
