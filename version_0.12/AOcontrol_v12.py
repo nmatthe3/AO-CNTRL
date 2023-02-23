@@ -730,9 +730,9 @@ class AO_interface(QWidget):
         super(AO_interface,self).__init__()
 
         #Load User Interface
-        uic.loadUi('aoUI_v0.11.ui',self)
+        uic.loadUi('aoUI_v0.12.ui',self)
         
-        self.setWindowTitle("Adaptive Optics Control v0.10")
+        self.setWindowTitle("Adaptive Optics Control v0.12")
         self.AO = AOunit() #reference the AO unit class as AO 
         self.init_UI() #build user interface
 
