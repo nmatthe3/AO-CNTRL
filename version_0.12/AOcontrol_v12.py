@@ -103,13 +103,13 @@ class AOunit(QObject):
         self.quad3 = [135,225]
         self.quad4 = [225,315]
         
-        def rot_matrix(self):
+        def rot_matrix(self,dir_vec):
             #convert to radians
             angle = self.field_rotation_ang * np.pi/180.0
             #compute rotation matrix
             n_p = np.array([np.cos(angle),-np.sin(angle)])
             e_p = np.array([np.sin(angle),np.cos(angle)])
-            return n_p,e_p
+            return n_p.astype('int'),int(e_p)
         
         
         
@@ -287,7 +287,7 @@ class AOunit(QObject):
             self.image_data = self.grab_image() #get processed image
             [yc,xc] = center_of_mass(self.image_data) #get centroid 
             
-            #Calculate difference between optimal and centroid positions
+            #Calculate difference between centroid and optimal positions
             del_x,del_y = xc - self._x_CA, yc - self._y_CA
             
             #-----------PI CONTROL-------------------
@@ -335,7 +335,7 @@ class AOunit(QObject):
                 if limit_y_S:
                     self.move_north()
                 
-                #Target is to 'right' (west) of set-point
+                #Target is to 'right' (east) of set-point
                 if N_x > 0:
                     if in_limit_x:
                         self.move_west()
@@ -344,7 +344,7 @@ class AOunit(QObject):
                         self.move_mount_west_mod()
                         self.wait()
                         self.move_east()
-                #Target is to 'left' (east) of set-point
+                #Target is to 'left' (west) of set-point
                 if N_x < 0:
                     if in_limit_x:
                         self.move_east()
@@ -518,6 +518,55 @@ class AOunit(QObject):
             return 4
     
     def move_mount_north_mod(self):
+        inp_vec = np.array([self.mount_cmd_duration,0])
+        [n,e] = self.rot_matrix(inp_vec)
+        if n > 0:
+            self.move_mount_north_by_val(n)
+        if n < 0:
+            self.move_mount_south_by_val(np.abs(n))
+        if e > 0:
+            self.move_mount_east_by_val(e)
+        if e < 0:
+            self.move_mount_west_by_val(np.abs(e))
+    
+    def move_mount_south_mod(self):
+        inp_vec = np.array([-self.mount_cmd_duration,0])
+        [n,e] = self.rot_matrix(inp_vec)
+        if n > 0:
+            self.move_mount_north_by_val(n)
+        if n < 0:
+            self.move_mount_south_by_val(np.abs(n))
+        if e > 0:
+            self.move_mount_east_by_val(e)
+        if e < 0:
+            self.move_mount_west_by_val(np.abs(e))
+            
+    def move_mount_east_mod(self):
+        inp_vec = np.array([0,self.mount_cmd_duration])
+        [n,e] = self.rot_matrix(inp_vec)
+        if n > 0:
+            self.move_mount_north_by_val(n)
+        if n < 0:
+            self.move_mount_south_by_val(np.abs(n))
+        if e > 0:
+            self.move_mount_east_by_val(e)
+        if e < 0:
+            self.move_mount_west_by_val(np.abs(e))
+            
+    def move_mount_west_mod(self):
+        inp_vec = np.array([0,-self.mount_cmd_duration])
+        [n,e] = self.rot_matrix(inp_vec)
+        if n > 0:
+            self.move_mount_north_by_val(n)
+        if n < 0:
+            self.move_mount_south_by_val(np.abs(n))
+        if e > 0:
+            self.move_mount_east_by_val(e)
+        if e < 0:
+            self.move_mount_west_by_val(np.abs(e))
+    
+    '''
+    def move_mount_north_mod(self):
         quad = self.get_field_angle_quadrant()
         if quad == 1:
             self.move_mount_north()
@@ -560,26 +609,90 @@ class AOunit(QObject):
             self.move_mount_east()
         if quad == 4:
             self.move_mount_south()
-
+    '''
+    
     def move_mount_north(self):
         self.ser.write(self.cmd_mount_north)
         print("Sending Mount Command - North")
-        #self.wait()
+        return
+    
+    def move_mount_north_by_val(self,cmd_length):
+        '''Sends serial command to mount to move 'North' 
+            of duration 'cmd_length' '''
+        
+        #Make sure input is an integer
+        if type(cmd_length) != 'int':
+            print("Duration value of type %s is not valid." 
+                  % cmd_length)
+            
+        north_cmd = bytes("MN"+str(cmd_length),"utf-8")
+        self.ser.write(north_cmd)
+        
+        print("Sending Mount Command - North")
+        return
         
     def move_mount_south(self):
         self.ser.write(self.cmd_mount_south)
         print("Sending Mount Command - South")
-        #self.wait()
-
+        return
+    
+    def move_mount_south_by_val(self,cmd_length):
+        '''Sends serial command to mount to move 'South' 
+            of duration 'cmd_length' '''
+        
+        #Make sure input is an integer
+        if type(cmd_length) != 'int':
+            print("Duration value of type %s is not valid." 
+                  % cmd_length)
+            return
+        
+        south_cmd = bytes("MS"+str(cmd_length),"utf-8")
+        self.ser.write(south_cmd)
+        
+        print("Sending Mount Command - South")
+        return
+    
     def move_mount_east(self):
         self.ser.write(self.cmd_mount_east)
         print("Sending Mount Command - East")
         #self.wait()
         
+    def move_mount_east_by_val(self,cmd_length):
+        '''Sends serial command to mount to move 'East' 
+            of duration 'cmd_length' '''
+        
+        #Make sure input is an integer
+        if type(cmd_length) != 'int':
+            print("Duration value of type %s is not valid." 
+                  % cmd_length)
+            return
+            
+        east_cmd = bytes("MT"+str(cmd_length),"utf-8")
+        self.ser.write(east_cmd)
+        
+        print("Sending Mount Command - East")
+        return
+        
     def move_mount_west(self):
         self.ser.write(self.cmd_mount_west)
         print("Sending Mount Command - West")
         #self.wait()
+        
+    def move_mount_west_by_val(self,cmd_length):
+        '''Sends serial command to mount to move 'West' 
+            of duration 'cmd_length' '''
+        
+        #Make sure input is an integer
+        if type(cmd_length) != 'int':
+            print("Duration value of type %s is not valid." 
+                  % cmd_length)
+            return
+            
+        west_cmd = bytes("MW"+str(cmd_length),"utf-8")
+        self.ser.write(west_cmd)
+        
+        print("Sending Mount Command - West")
+        return
     
     def scan_east(self):
         for ii in range(self.raster_steps):
